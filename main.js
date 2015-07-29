@@ -1,9 +1,32 @@
 var https = require('https')
 var sortBy = require('sort-array');
+var restify = require('restify')
 var auth = require('./auth.json');
 var sprintHistory = [];
 
-function getSprints(boardId, callback) {
+var server = restify.createServer()
+
+server.get("/jiradata/sprinthistory", function(req, res, next) {
+	var boardId = 159;
+	sprintHistory = [];
+	getSprints(boardId, handleSprints, function() {
+		res.json(sprintHistory);
+	});
+	next();
+});
+
+var port = 3001
+server.listen(port, function (err) {
+    if (err) {
+        console.error(err)
+        return 1
+    } else {
+        return 0
+    }
+})
+
+function getSprints(boardId, callback, ready) {
+
 	https.get("https://"+auth.username+":"+auth.password+"@epages.atlassian.net/rest/agile/1.0/board/"+boardId+"/sprint", function(res) {
 
 		var body = '';
@@ -12,14 +35,14 @@ function getSprints(boardId, callback) {
 		});
 		res.on('end', function() {
 			sprints = JSON.parse(body);
-			callback(boardId, sprints);
+			callback(boardId, sprints, ready);
 		});
 	}).on('error', function(e) {
-	  console.log("Got error: " + e.message);
+		console.log("Got error: " + e.message);
 	});
 }
 
-function getSprintById(boardId, sprintId, expectedSprintCount, callback) {
+function getSprintById(boardId, sprintId, expectedSprintCount, callback, ready) {
 	https.get("https://"+auth.username+":"+auth.password+"@epages.atlassian.net/rest/greenhopper/latest/rapid/charts/sprintreport?rapidViewId="+boardId+"&sprintId="+sprintId, function(res) {
 
 		var body = '';
@@ -28,7 +51,7 @@ function getSprintById(boardId, sprintId, expectedSprintCount, callback) {
 		});
 		res.on('end', function() {
 			sprint = JSON.parse(body);
-			callback(sprint, expectedSprintCount);
+			callback(sprint, expectedSprintCount, ready);
 		});
 	}).on('error', function(e) {
 	  console.log("Got error: " + e.message);
@@ -92,23 +115,21 @@ function extractSprintData(sprint) {
 	return SprintData;
 }
 
-function handleSprints(boardId, sprints) {
+function handleSprints(boardId, sprints, ready) {
 	var startSprint = 244;
 	var result = extractSprintsStartingAtId(sprints, startSprint);
 
 	for(var i = 0; i < result.length; i++) {
-		getSprintById(boardId, result[i], result.length, handleSprint);
+		getSprintById(boardId, result[i], result.length, handleSprint, ready);
 	}
 }
 
-function handleSprint(sprint, expectedSprintCount) {
+function handleSprint(sprint, expectedSprintCount, ready) {
 	sprintHistory.push(extractSprintData(sprint));
 	if(sprintHistory.length == expectedSprintCount) {
 		sortBy(sprintHistory, "id");
-		console.log(sprintHistory);
+		ready();
 	}
 	
 }
 
-var boardId = 159;
-getSprints(boardId, handleSprints);

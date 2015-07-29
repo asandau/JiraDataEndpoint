@@ -1,0 +1,11 @@
+{
+  "name": "jira_data_endpoint",
+  "version": "1.0.0",
+  "description": "endpoint for Sprintshow to get data for jira",
+  "main": "main.js",
+  "dependencies": {
+    "fs": "0.0.2",
+    "restify": "^3.0.2",
+    "sqlite3": "^3.0.8"
+  }
+}

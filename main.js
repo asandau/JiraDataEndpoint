@@ -60,6 +60,25 @@ function extractActiveSprint(sprints) {
 	}
 }
 
+function extractPulledStoryPoints(sprint) {
+	var addedDuringSprint = sprint.contents.issueKeysAddedDuringSprint;
+	var issues = sprint.contents.completedIssues.concat(sprint.contents.incompletedIssues);
+	
+	var pulledStorypoints = 0;
+	var keys = Object.keys(addedDuringSprint);
+    for(var i=0; i<keys.length; i++){
+		for(var j=0; j<issues.length; j++) {
+			if(issues[j].key == keys[i]) {
+				var value = issues[j].estimateStatistic.statFieldValue.value;
+				if(value) {
+					pulledStorypoints += value;	
+				}
+			}
+		}
+    }
+	return pulledStorypoints;
+}
+
 function extractSprintData(sprint) {
 	var SprintData = {
 		id: sprint.sprint.id,
@@ -67,8 +86,7 @@ function extractSprintData(sprint) {
 		storyPoints: {
 			promised: sprint.contents.allIssuesEstimateSum.text,
 			leftOvers: sprint.contents.incompletedIssuesEstimateSum.text,
-			pulled: 0
-			//TODO get pulled storypoints
+			pulled: extractPulledStoryPoints(sprint)
 		}
 	}
 	return SprintData;

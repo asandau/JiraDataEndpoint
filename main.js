@@ -7,6 +7,16 @@ var originalSort = [];
 var blacklist = [288];
 
 var server = restify.createServer()
+server.use(restify.fullResponse())
+server.use(restify.bodyParser({ mapParams: true }))
+
+server.use(
+  function crossOrigin(req,res,next){
+    res.header("Access-Control-Allow-Origin", "*")
+    res.header("Access-Control-Allow-Headers", "X-Requested-With")
+    return next()
+  }
+)
 
 server.get("/jiradata/sprinthistory", function(req, res, next) {
 	var boardId = 159;

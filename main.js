@@ -3,12 +3,15 @@ var sortBy = require('sort-array');
 var restify = require('restify')
 var auth = require('./auth.json');
 var sprintHistory = [];
+var originalSort = [];
+var blacklist = [288];
 
 var server = restify.createServer()
 
 server.get("/jiradata/sprinthistory", function(req, res, next) {
 	var boardId = 159;
 	sprintHistory = [];
+	res.setHeader('Access-Control-Allow-Origin', '*');
 	getSprints(boardId, handleSprints, function() {
 		res.json(sprintHistory);
 	});
@@ -64,7 +67,13 @@ function extractSprintsStartingAtId(sprints, startSprint) {
 	var values = sprints.values;
 
 	for (var i = 0; i < arrayLength; i++) {
-		if(values[i].id>=startSprint && values[i].state!='future') {
+		var blacklisted = 0;
+		
+		for(var j = 0; j<blacklist.length; j++) {
+			if(values[i].id==blacklist[j]) blacklisted = 1;
+		}
+		
+		if(values[i].id>=startSprint && values[i].state!='future' && !blacklisted) {
 			result.push(values[i].id);
 		}
 	}
@@ -103,13 +112,14 @@ function extractPulledStoryPoints(sprint) {
 }
 
 function extractSprintData(sprint) {
+	var pulledStoryPoint = extractPulledStoryPoints(sprint);
 	var SprintData = {
 		id: sprint.sprint.id,
 		sprintName: sprint.sprint.name,
 		storyPoints: {
-			promised: sprint.contents.allIssuesEstimateSum.text,
+			promised: sprint.contents.allIssuesEstimateSum.text - pulledStoryPoint,
 			leftOvers: sprint.contents.incompletedIssuesEstimateSum.text,
-			pulled: extractPulledStoryPoints(sprint)
+			pulled: pulledStoryPoint
 		}
 	}
 	return SprintData;
@@ -120,6 +130,7 @@ function handleSprints(boardId, sprints, ready) {
 	var result = extractSprintsStartingAtId(sprints, startSprint);
 
 	for(var i = 0; i < result.length; i++) {
+		originalSort.push(result[i]);
 		getSprintById(boardId, result[i], result.length, handleSprint, ready);
 	}
 }
@@ -127,7 +138,7 @@ function handleSprints(boardId, sprints, ready) {
 function handleSprint(sprint, expectedSprintCount, ready) {
 	sprintHistory.push(extractSprintData(sprint));
 	if(sprintHistory.length == expectedSprintCount) {
-		sortBy(sprintHistory, "id");
+		sortBy(sprintHistory, "id", { id: originalSort });
 		ready();
 	}
 	

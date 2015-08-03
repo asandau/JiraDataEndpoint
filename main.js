@@ -6,6 +6,11 @@ var sprintHistory = [];
 var originalSort = [];
 var blacklist = [288];
 
+var tasks = 0;
+var stories = 0;
+var bugs = 0;
+var improvements = 0;
+
 var server = restify.createServer()
 server.use(restify.fullResponse())
 server.use(restify.bodyParser({ mapParams: true }))
@@ -112,8 +117,26 @@ function extractPulledStoryPoints(sprint) {
 		for(var j=0; j<issues.length; j++) {
 			if(issues[j].key == keys[i]) {
 				var value = issues[j].estimateStatistic.statFieldValue.value;
+				
 				if(value) {
 					pulledStorypoints += value;	
+				}
+				
+				var typeName = issues[j].typeName;
+				
+				switch(typeName) {
+					case "Bug":
+						bugs++;
+						break;
+					case "Story":
+						stories++;
+						break;
+					case "Task":
+						tasks++;
+						break;
+					case "Improvement":
+						improvements++;
+						break;
 				}
 			}
 		}
@@ -130,7 +153,14 @@ function extractSprintData(sprint) {
 			promised: sprint.contents.allIssuesEstimateSum.text - pulledStoryPoint,
 			leftOvers: sprint.contents.incompletedIssuesEstimateSum.text,
 			pulled: pulledStoryPoint
+		},
+		storyTypes: {
+			bugs: bugs,
+			tasks: tasks,
+			improvements: improvements,
+			stories: stories
 		}
+		
 	}
 	return SprintData;
 }

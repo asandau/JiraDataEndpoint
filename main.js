@@ -73,9 +73,9 @@ function getSprintById(boardId, sprintId, expectedSprintCount, callback, ready) 
 
 function extractSprintsStartingAtId(sprints, startSprint) {
 	var result = [];
-	var arrayLength = sprints.maxResults;
 	var values = sprints.values;
-
+	var arrayLength = values.length;
+	
 	for (var i = 0; i < arrayLength; i++) {
 		var blacklisted = 0;
 		

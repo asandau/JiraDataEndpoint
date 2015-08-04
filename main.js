@@ -171,28 +171,28 @@ function extractSprintData(sprint) {
 			leftOvers: sprint.contents.incompletedIssuesEstimateSum.text,
 			pulled: pulledStoryPoint
 		},
-		typeDistribution: {
-			{
-				title: "Bug",
-				storyPoints : typeSums["bugs"]
-			},
-			{
-				title: "Task",
-				storyPoints : typeSums["tasks"]
-			},
-			{
-				title: "Story",
-				storyPoints : typeSums["stories"]
-			},
-			{
-				title: "Improvment",
-				storyPoints : typeSums["improvements"]
-			},
-			{
-				title: "Research",
-				storyPoints : typeSums["research"]
-			}
-		}
+		typeDistribution: [
+				{
+					title: "Bug",
+					storyPoints : typeSums["bugs"]
+				},
+				{
+					title: "Task",
+					storyPoints : typeSums["tasks"]
+				},
+				{
+					title: "Story",
+					storyPoints : typeSums["stories"]
+				},
+				{
+					title: "Improvment",
+					storyPoints : typeSums["improvements"]
+				},
+				{
+					title: "Research",
+					storyPoints : typeSums["research"]
+				}
+			]
 	}
 	return SprintData;
 }

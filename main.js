@@ -6,11 +6,6 @@ var sprintHistory = [];
 var originalSort = [];
 var blacklist = [288];
 
-var tasks = 0;
-var stories = 0;
-var bugs = 0;
-var improvements = 0;
-
 var server = restify.createServer()
 server.use(restify.fullResponse())
 server.use(restify.bodyParser({ mapParams: true }))
@@ -128,43 +123,46 @@ function extractPulledStoryPoints(sprint) {
 	return pulledStorypoints;
 }
 
-function extractStoryTypes(sprint) {
+function extractTypeDistribution(sprint) {
 	
-	var storyTypeCounts = new Array();
-	storyTypeCounts["bugs"] = 0;
-	storyTypeCounts["tasks"] = 0;
-	storyTypeCounts["improvements"] = 0;
-	storyTypeCounts["stories"] = 0;
-	storyTypeCounts["research"] = 0;
+	var typeSums = new Array();
+	typeSums["bugs"] = 0;
+	typeSums["tasks"] = 0;
+	typeSums["improvements"] = 0;
+	typeSums["stories"] = 0;
+	typeSums["research"] = 0;
 	
 	var issues = sprint.contents.completedIssues.concat(sprint.contents.incompletedIssues);
 	for(var i=0; i<issues.length; i++) {
+		
 		var storyType = issues[i].typeName;
+		var value = issues[i].estimateStatistic.statFieldValue.value;
+		
 		switch(storyType) {
 			case "Bug":
-				storyTypeCounts["bugs"]++;
+				typeSums["bugs"] += value;
 				break;
 			case "Story":
-				storyTypeCounts["stories"]++;
+				typeSums["stories"] += value;
 				break;
 			case "Task":
-				storyTypeCounts["tasks"]++;
+				typeSums["tasks"] += value;
 				break;
 			case "Improvement":
-				storyTypeCounts["improvements"]++;
+				typeSums["improvements"] += value;
 				break;
 			case "Research":
-				storyTypeCounts["research"]++;
+				typeSums["research"] += value;
 				break;
 		}
 	}
 	
-	return storyTypeCounts;
+	return typeSums;
 }
 
 function extractSprintData(sprint) {
 	var pulledStoryPoint = extractPulledStoryPoints(sprint);
-	var storyTypeCounts = extractStoryTypes(sprint);
+	var typeSums = extractTypeDistribution(sprint);
 	var SprintData = {
 		id: sprint.sprint.id,
 		sprintName: sprint.sprint.name,
@@ -173,12 +171,27 @@ function extractSprintData(sprint) {
 			leftOvers: sprint.contents.incompletedIssuesEstimateSum.text,
 			pulled: pulledStoryPoint
 		},
-		storyTypes: {
-			bugs: storyTypeCounts["bugs"],
-			tasks: storyTypeCounts["tasks"],
-			improvements: storyTypeCounts["improvements"],
-			stories: storyTypeCounts["stories"],
-			research: storyTypeCounts["research"]
+		typeDistribution: {
+			{
+				title: "Bug",
+				storyPoints : typeSums["bugs"]
+			},
+			{
+				title: "Task",
+				storyPoints : typeSums["tasks"]
+			},
+			{
+				title: "Story",
+				storyPoints : typeSums["stories"]
+			},
+			{
+				title: "Improvment",
+				storyPoints : typeSums["improvements"]
+			},
+			{
+				title: "Research",
+				storyPoints : typeSums["research"]
+			}
 		}
 	}
 	return SprintData;

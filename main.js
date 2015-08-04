@@ -112,8 +112,9 @@ function extractPulledStoryPoints(sprint) {
 	var issues = sprint.contents.completedIssues.concat(sprint.contents.incompletedIssues);
 	
 	var pulledStorypoints = 0;
+
 	var keys = Object.keys(addedDuringSprint);
-    for(var i=0; i<keys.length; i++){
+    for(var i=0; i<keys.length; i++) {
 		for(var j=0; j<issues.length; j++) {
 			if(issues[j].key == keys[i]) {
 				var value = issues[j].estimateStatistic.statFieldValue.value;
@@ -121,31 +122,45 @@ function extractPulledStoryPoints(sprint) {
 				if(value) {
 					pulledStorypoints += value;	
 				}
-				
-				var typeName = issues[j].typeName;
-				
-				switch(typeName) {
-					case "Bug":
-						bugs++;
-						break;
-					case "Story":
-						stories++;
-						break;
-					case "Task":
-						tasks++;
-						break;
-					case "Improvement":
-						improvements++;
-						break;
-				}
 			}
 		}
     }
 	return pulledStorypoints;
 }
 
+function extractStoryTypes(sprint) {
+	
+	var storyTypeCounts = new Array();
+	storyTypeCounts["bugs"] = 0;
+	storyTypeCounts["tasks"] = 0;
+	storyTypeCounts["improvements"] = 0;
+	storyTypeCounts["stories"] = 0;
+	
+	var issues = sprint.contents.completedIssues;
+	for(var i=0; i<issues.length; i++) {
+		var storyType = issues[i].typeName;
+		switch(storyType) {
+			case "Bug":
+				storyTypeCounts["bugs"]++;
+				break;
+			case "Story":
+				storyTypeCounts["stories"]++;
+				break;
+			case "Task":
+				storyTypeCounts["tasks"]++;
+				break;
+			case "Improvement":
+				storyTypeCounts["improvements"]++;
+				break;
+		}
+	}
+	
+	return storyTypeCounts;
+}
+
 function extractSprintData(sprint) {
 	var pulledStoryPoint = extractPulledStoryPoints(sprint);
+	var storyTypeCounts = extractStoryTypes(sprint);
 	var SprintData = {
 		id: sprint.sprint.id,
 		sprintName: sprint.sprint.name,
@@ -155,10 +170,10 @@ function extractSprintData(sprint) {
 			pulled: pulledStoryPoint
 		},
 		storyTypes: {
-			bugs: bugs,
-			tasks: tasks,
-			improvements: improvements,
-			stories: stories
+			bugs: storyTypeCounts["bugs"],
+			tasks: storyTypeCounts["tasks"],
+			improvements: storyTypeCounts["improvements"],
+			stories: storyTypeCounts["stories"]
 		}
 		
 	}

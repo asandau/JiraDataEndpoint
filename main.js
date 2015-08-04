@@ -135,8 +135,9 @@ function extractStoryTypes(sprint) {
 	storyTypeCounts["tasks"] = 0;
 	storyTypeCounts["improvements"] = 0;
 	storyTypeCounts["stories"] = 0;
+	storyTypeCounts["research"] = 0;
 	
-	var issues = sprint.contents.completedIssues;
+	var issues = sprint.contents.completedIssues.concat(sprint.contents.incompletedIssues);
 	for(var i=0; i<issues.length; i++) {
 		var storyType = issues[i].typeName;
 		switch(storyType) {
@@ -151,6 +152,9 @@ function extractStoryTypes(sprint) {
 				break;
 			case "Improvement":
 				storyTypeCounts["improvements"]++;
+				break;
+			case "Research":
+				storyTypeCounts["research"]++;
 				break;
 		}
 	}
@@ -173,9 +177,9 @@ function extractSprintData(sprint) {
 			bugs: storyTypeCounts["bugs"],
 			tasks: storyTypeCounts["tasks"],
 			improvements: storyTypeCounts["improvements"],
-			stories: storyTypeCounts["stories"]
+			stories: storyTypeCounts["stories"],
+			research: storyTypeCounts["research"]
 		}
-		
 	}
 	return SprintData;
 }

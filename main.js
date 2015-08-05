@@ -6,7 +6,6 @@ var Board = require('./Board');
 
 var sprintHistory = [];
 var originalSort = [];
-var blacklist = [288];
 
 var server = restify.createServer()
 server.use(restify.fullResponse())
@@ -57,26 +56,6 @@ function getSprintById(boardId, sprintId, expectedSprintCount, callback, ready) 
 	}).on('error', function(e) {
 	  console.log("Got error: " + e.message);
 	});
-}
-
-function extractSprintsStartingAtId(sprints, startSprint) {
-	var result = [];
-	var values = sprints.values;
-	var arrayLength = values.length;
-	
-	for (var i = 0; i < arrayLength; i++) {
-		var blacklisted = 0;
-		
-		for(var j = 0; j<blacklist.length; j++) {
-			if(values[i].id==blacklist[j]) blacklisted = 1;
-		}
-		
-		if(values[i].id>=startSprint && values[i].state!='future' && !blacklisted) {
-			result.push(values[i].id);
-		}
-	}
-
-	return result;
 }
 
 function extractActiveSprint(sprints) {
@@ -185,14 +164,11 @@ function extractSprintData(sprint) {
 	return SprintData;
 }
 
-function handleSprints(boardId, sprints, ready) {
-	var startSprint = 244;
-	var result = extractSprintsStartingAtId(sprints, startSprint);
-
-	for(var i = 0; i < result.length; i++) {
-		originalSort.push(result[i]);
-		getSprintById(boardId, result[i], result.length, handleSprint, ready);
-	}
+function handleSprints(boardId, result, ready) {
+  for(var i = 0; i < result.length; i++) {
+    originalSort.push(result[i]);
+    getSprintById(boardId, result[i], result.length, handleSprint, ready);
+  }
 }
 
 function handleSprint(sprint, expectedSprintCount, ready) {

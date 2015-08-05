@@ -1,8 +1,7 @@
-var https = require('https')
-var sortBy = require('sort-array');
+var sortBy = require('sort-array')
 var restify = require('restify')
-var auth = require('./auth.json');
-var Board = require('./Board');
+var Board = require('./Board')
+var Sprint = require('./Sprint')
 
 var sprintHistory = [];
 var originalSort = [];
@@ -41,22 +40,6 @@ server.listen(port, function (err) {
         return 0
     }
 })
-
-function getSprintById(boardId, sprintId, expectedSprintCount, callback, ready) {
-	https.get("https://"+auth.username+":"+auth.password+"@epages.atlassian.net/rest/greenhopper/latest/rapid/charts/sprintreport?rapidViewId="+boardId+"&sprintId="+sprintId, function(res) {
-
-		var body = '';
-		res.on('data', function(d) {
-			body += d;
-		});
-		res.on('end', function() {
-			sprint = JSON.parse(body);
-			callback(sprint, expectedSprintCount, ready);
-		});
-	}).on('error', function(e) {
-	  console.log("Got error: " + e.message);
-	});
-}
 
 function extractActiveSprint(sprints) {
 	var arrayLength = sprints.maxResults;
@@ -167,16 +150,15 @@ function extractSprintData(sprint) {
 function handleSprints(boardId, result, ready) {
   for(var i = 0; i < result.length; i++) {
     originalSort.push(result[i]);
-    getSprintById(boardId, result[i], result.length, handleSprint, ready);
+    var sprint = new Sprint(boardId, result[i])
+    sprint.getSprint(handleSprint, ready, result.length)
   }
 }
 
 function handleSprint(sprint, expectedSprintCount, ready) {
-	sprintHistory.push(extractSprintData(sprint));
-	if(sprintHistory.length == expectedSprintCount) {
-		sortBy(sprintHistory, "id", { id: originalSort });
-		ready();
-	}
-	
+  sprintHistory.push(extractSprintData(sprint))
+  if(sprintHistory.length == expectedSprintCount) {
+    sortBy(sprintHistory, "id", { id: originalSort })
+    ready()
+  }
 }
-

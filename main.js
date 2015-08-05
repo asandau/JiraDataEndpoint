@@ -2,6 +2,8 @@ var https = require('https')
 var sortBy = require('sort-array');
 var restify = require('restify')
 var auth = require('./auth.json');
+var Board = require('./Board');
+
 var sprintHistory = [];
 var originalSort = [];
 var blacklist = [288];
@@ -19,13 +21,16 @@ server.use(
 )
 
 server.get("/jiradata/sprinthistory", function(req, res, next) {
-	var boardId = 159;
-	sprintHistory = [];
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	getSprints(boardId, handleSprints, function() {
-		res.json(sprintHistory);
-	});
-	next();
+  var boardId = 159;
+  sprintHistory = [];
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  var board = new Board(boardId)
+  board.getSprints(handleSprints, function() {
+    res.json(sprintHistory);
+  })
+
+  next();
 });
 
 var port = 3001
@@ -37,23 +42,6 @@ server.listen(port, function (err) {
         return 0
     }
 })
-
-function getSprints(boardId, callback, ready) {
-
-	https.get("https://"+auth.username+":"+auth.password+"@epages.atlassian.net/rest/agile/1.0/board/"+boardId+"/sprint", function(res) {
-
-		var body = '';
-		res.on('data', function(d) {
-			body += d;
-		});
-		res.on('end', function() {
-			sprints = JSON.parse(body);
-			callback(boardId, sprints, ready);
-		});
-	}).on('error', function(e) {
-		console.log("Got error: " + e.message);
-	});
-}
 
 function getSprintById(boardId, sprintId, expectedSprintCount, callback, ready) {
 	https.get("https://"+auth.username+":"+auth.password+"@epages.atlassian.net/rest/greenhopper/latest/rapid/charts/sprintreport?rapidViewId="+boardId+"&sprintId="+sprintId, function(res) {

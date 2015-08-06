@@ -12,7 +12,7 @@ function Sprint(boardId, sprintId) {
 
 Sprint.prototype.getSprint = function() {
 
-  epp = new EPPromise();
+  var epp = new EPPromise();
   https.get("https://"+auth.username+":"+auth.password+"@epages.atlassian.net/rest/greenhopper/latest/rapid/charts/sprintreport?rapidViewId="+this.boardId+"&sprintId="+this.sprintId, function(res) {
     var body = ''
     res.on('data', function(data) {

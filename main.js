@@ -26,7 +26,7 @@ server.get("/jiradata/sprinthistory", function(req, res, next) {
 
   var board = new Board(boardId)
   board.getSprints().success(function(result) {
-    handleSprints(boardId, result, function(sprintHistory) {
+    handleSprints(boardId, result).success(function(sprintHistory) {
       res.json(sprintHistory);
     })
   })
@@ -47,20 +47,22 @@ server.listen(port, function (err) {
 
 
 
-function handleSprints(boardId, result, ready) {
+function handleSprints(boardId, result) {
   var order = [];
   var sprintHistory = [];
-
+  var epp = new EPPromise()
   for(var i = 0; i < result.length; i++) {
     order.push(result[i]);
+    
     var sprint = new Sprint(boardId, result[i])
     sprint.getSprint().success(function(sprint) {
         sprintDataExtractor = new SprintDataExtractor()
         sprintHistory.push(sprintDataExtractor.extractData(sprint))
         if(sprintHistory.length == result.length) {
           sortBy(sprintHistory, "id", { id: order })
-          ready(sprintHistory);
+          epp.getCallback().callback(sprintHistory);
         }
     });
   }
+  return epp
 }

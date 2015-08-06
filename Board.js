@@ -16,7 +16,7 @@ Board.prototype.getSprints = function() {
   var boardId = this.boardId
   var url = "https://"+auth.username+":"+auth.password+"@epages.atlassian.net/rest/agile/1.0/board/"+boardId+"/sprint"
   
-  epp = new EPPromise()
+  var epp = new EPPromise()
 
   https.get(url, function(res) {
     var body = ''

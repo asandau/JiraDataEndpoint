@@ -1,6 +1,6 @@
 var https = require('https')
 var auth = require('./auth.json')
-
+var EPPromise = require('./EPPromise')
 
 
 function Sprint(boardId, sprintId) {
@@ -10,7 +10,9 @@ function Sprint(boardId, sprintId) {
 
 
 
-Sprint.prototype.getSprint = function(callback, ready, expectedSprintCount) {
+Sprint.prototype.getSprint = function(expectedSprintCount) {
+
+  epp = new EPPromise();
   https.get("https://"+auth.username+":"+auth.password+"@epages.atlassian.net/rest/greenhopper/latest/rapid/charts/sprintreport?rapidViewId="+this.boardId+"&sprintId="+this.sprintId, function(res) {
     var body = ''
     res.on('data', function(data) {
@@ -18,11 +20,12 @@ Sprint.prototype.getSprint = function(callback, ready, expectedSprintCount) {
     })
     res.on('end', function() {
       var sprint = JSON.parse(body)
-      callback(sprint, expectedSprintCount, ready)
+      epp.getCallback().callback(sprint, expectedSprintCount)
     })
   }).on('error', function(e) {
     console.log("Got error: " + e.message)
   })
+  return epp;
 }
 
 

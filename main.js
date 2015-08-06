@@ -4,7 +4,7 @@ var restify = require('restify')
 var Board = require('./Board')
 var Sprint = require('./Sprint')
 var SprintDataExtractor = require('./SprintDataExtractor')
-
+var EPPromise = require('./EPPromise')
 
 var port = 3001
 var sprintHistory = [];
@@ -32,9 +32,9 @@ server.get("/jiradata/sprinthistory", function(req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   var board = new Board(boardId)
-  board.getSprints(handleSprints, function() {
+  board.getSprints(function() {
     res.json(sprintHistory);
-  })
+  }).success(handleSprints);
 
   next();
 });
@@ -56,17 +56,21 @@ function handleSprints(boardId, result, ready) {
   for(var i = 0; i < result.length; i++) {
     originalSort.push(result[i]);
     var sprint = new Sprint(boardId, result[i])
-    sprint.getSprint(handleSprint, ready, result.length)
+    sprint.getSprint(result.length).success(function(sprint, expectedSprintCount) {
+      handleSprint(sprint, expectedSprintCount, ready);
+    });
   }
 }
 
 
 
 function handleSprint(sprint, expectedSprintCount, ready) {
+
   sprintDataExtractor = new SprintDataExtractor()
   sprintHistory.push(sprintDataExtractor.extractData(sprint))
   if(sprintHistory.length == expectedSprintCount) {
     sortBy(sprintHistory, "id", { id: originalSort })
     ready()
   }
+
 }

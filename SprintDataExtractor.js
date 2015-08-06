@@ -10,6 +10,7 @@ function SprintDataExtractor() {
 SprintDataExtractor.prototype.extractData = function(sprint) {
   var pulledStoryPoint = extractPulledStoryPoints(sprint);
   var typeSums = extractTypeDistribution(sprint);
+  var topics = extractDistribution(sprint);
   var SprintData = {
     id: sprint.sprint.id,
     sprintName: sprint.sprint.name,
@@ -39,7 +40,8 @@ SprintDataExtractor.prototype.extractData = function(sprint) {
           title: "Research",
           storyPoints : typeSums["research"]
         }
-      ]
+      ],
+    topicDistribution: topics
   }
   return SprintData;
 }
@@ -106,6 +108,44 @@ function extractTypeDistribution(sprint) {
   return typeSums;
 }
 
+function extractDistribution(sprint) {
+  
+  var topics = {};
+  
+  var issues = sprint.contents.completedIssues.concat(sprint.contents.incompletedIssues);
+  for(var i=0; i<issues.length; i++) {
+    
+    var epic = issues[i].epicField;
+    var name = issues[i].summary;
+    var storypoints = issues[i].estimateStatistic.statFieldValue.value;
+    
+    if(epic != undefined) {
+      name = epic.text;
+    }
+    addToTopicsHash(topics, name, storypoints);
 
+  }
+  
+  return topicsHashtoArray(topics);
+}
+
+function addToTopicsHash(topics, name, storypoints) {
+  if(topics[name] == undefined) {
+    topics[name] = storypoints;
+  } else {
+    topics[name] += storypoints;
+  }
+}
+
+function topicsHashtoArray(topics) {
+  var retval = [];
+  for(var key in topics){
+    retval.push({
+					title: key,
+					storyPoints : topics[key]
+				});
+  }
+   return retval;
+}
 
 module.exports = SprintDataExtractor

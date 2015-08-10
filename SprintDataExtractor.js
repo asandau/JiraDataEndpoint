@@ -140,9 +140,10 @@ function addToTopicsHash(topics, name, storypoints) {
 function topicsHashtoArray(topics) {
   var retval = [];
   for(var key in topics){
+    var sp = topics[key]==undefined?0:topics[key];
     retval.push({
 					title: key,
-					storyPoints : topics[key]
+					storyPoints : sp
 				});
   }
    return retval;

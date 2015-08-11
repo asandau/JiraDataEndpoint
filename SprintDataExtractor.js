@@ -129,6 +129,20 @@ function extractDistribution(sprint) {
   return topicsHashtoArray(topics);
 }
 
+SprintDataExtractor.prototype.extractSprintGoals = function(rawSprintGoals) {
+  var issues = rawSprintGoals.issues
+  var sprintGoalList = []
+  for(var i=0; i<issues.length; i++) {
+    var issue = {
+      summary:issues[i].fields.summary,
+      key: issues[i].key
+    };
+
+    sprintGoalList.push(issue);
+  }
+  return sprintGoalList
+}
+
 function addToTopicsHash(topics, name, storypoints) {
   if(topics[name] == undefined) {
     topics[name] = storypoints;

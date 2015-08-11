@@ -2,6 +2,7 @@ var sortBy = require('sort-array')
 var restify = require('restify')
 
 var Board = require('./Board')
+var JiraQuerry = require('./JiraQuerry')
 var Sprint = require('./Sprint')
 var SprintDataExtractor = require('./SprintDataExtractor')
 var EPPromise = require('./EPPromise')
@@ -60,9 +61,17 @@ function handleSprints(boardId, result) {
         sprintHistory.push(sprintDataExtractor.extractData(sprint))
         if(sprintHistory.length == result.length) {
           sortBy(sprintHistory, "id", { id: order })
-          epp.getCallback().callback(sprintHistory);
+          jiraQuerry = new JiraQuerry()
+          var currentSprintname = sprintHistory[result.length-1].sprintName
+          jiraQuerry.getSprintGoals(currentSprintname).success( function(querryResult) {
+            var sprintGoals = sprintDataExtractor.extractSprintGoals(querryResult);
+            sprintHistory[result.length-1].sprintGoals = sprintGoals;
+            epp.getCallback().callback(sprintHistory)
+          })
+
         }
     });
+    
   }
   return epp
 }

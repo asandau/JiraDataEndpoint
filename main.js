@@ -54,9 +54,9 @@ function handleSprints(boardId, result) {
   var epp = new EPPromise()
   for(var i = 0; i < result.length; i++) {
     order.push(result[i]);
-    
+
     var sprint = new Sprint(boardId, result[i])
-    sprint.getSprint().success(function(sprint) {
+    sprint.getSprint().then(function(sprint) {
         sprintDataExtractor = new SprintDataExtractor()
         sprintHistory.push(sprintDataExtractor.extractData(sprint))
         if(sprintHistory.length == result.length) {
@@ -71,7 +71,7 @@ function handleSprints(boardId, result) {
 
         }
     });
-    
+
   }
   return epp
 }

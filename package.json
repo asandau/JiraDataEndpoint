@@ -6,7 +6,8 @@
   "dependencies": {
     "fs": "0.0.2",
     "restify": "^3.0.2",
-    "sqlite3": "^3.0.8",
-	"sort-array": "0.1.0"
+    "rsvp": "^3.0.21",
+    "sort-array": "0.1.0",
+    "sqlite3": "^3.0.8"
   }
 }

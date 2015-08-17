@@ -65,7 +65,7 @@ function handleSprints(boardId, result) {
             sortBy(sprintHistory, "id", { id: order })
             jiraQuerry = new JiraQuerry()
             var currentSprintname = sprintHistory[result.length-1].sprintName
-            jiraQuerry.getSprintGoals(currentSprintname).success( function(querryResult) {
+            jiraQuerry.getSprintGoals(currentSprintname).then( function(querryResult) {
               var sprintGoals = sprintDataExtractor.extractSprintGoals(querryResult);
               sprintHistory[result.length-1].sprintGoals = sprintGoals;
               resolve(sprintHistory)

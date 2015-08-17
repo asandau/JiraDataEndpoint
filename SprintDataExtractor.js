@@ -85,6 +85,7 @@ function extractTypeDistribution(sprint) {
     
     var storyType = issues[i].typeName;
     var value = issues[i].estimateStatistic.statFieldValue.value;
+    if(value==undefined) value = 0;
     
     switch(storyType) {
       case "Bug":
@@ -118,6 +119,7 @@ function extractDistribution(sprint) {
     var epic = issues[i].epicField;
     var name = issues[i].summary;
     var storypoints = issues[i].estimateStatistic.statFieldValue.value;
+    if(storypoints==undefined) storypoints = 0;
     
     if(epic != undefined) {
       name = epic.text;

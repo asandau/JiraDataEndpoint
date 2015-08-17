@@ -1,6 +1,6 @@
 var https = require('https')
 var auth = require('./auth.json')
-var EPPromise = require('./EPPromise')
+var rsvp = require('rsvp')
 
 var blacklist = [288];
 
@@ -15,26 +15,27 @@ function Board(boardId) {
 Board.prototype.getSprints = function() {
   var boardId = this.boardId
   var url = "https://"+auth.username+":"+auth.password+"@epages.atlassian.net/rest/agile/1.0/board/"+boardId+"/sprint"
-  
-  var epp = new EPPromise()
 
-  https.get(url, function(res) {
-    var body = ''
-    res.on('data', function(d) {
-      body += d
+  var promise = new rsvp.Promise(function(resolve) {
+
+    https.get(url, function(res) {
+      var body = ''
+      res.on('data', function(d) {
+        body += d
+      })
+      res.on('end', function() {
+        var sprints = JSON.parse(body)
+        var startSprint = 244;
+        var result = extractSprintsStartingAtId(sprints, startSprint)
+
+        resolve(result)
+      })
+    }).on('error', function(e) {
+      console.log("Got error: " + e.message)
     })
-    res.on('end', function() {
-      var sprints = JSON.parse(body)
-      var startSprint = 244;
-      var result = extractSprintsStartingAtId(sprints, startSprint)
-	  
-      epp.getCallback().callback(result)
-    })
-  }).on('error', function(e) {
-    console.log("Got error: " + e.message)
+
   })
-  
-  	return epp;
+  return promise
 }
 
 

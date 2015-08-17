@@ -26,7 +26,7 @@ server.get("/jiradata/sprinthistory", function(req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   var board = new Board(boardId)
-  board.getSprints().success(function(result) {
+  board.getSprints().then(function(result) {
     handleSprints(boardId, result).success(function(sprintHistory) {
       res.json(sprintHistory);
     })

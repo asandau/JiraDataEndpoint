@@ -8,16 +8,17 @@ function SprintDataExtractor() {
 
 
 SprintDataExtractor.prototype.extractData = function(sprint) {
-  var pulledStoryPoint = extractPulledStoryPoints(sprint);
+  var pulledStoryPoint = extractPulledStoryPoints(sprint); 
   var typeSums = extractTypeDistribution(sprint);
   var topics = extractDistribution(sprint);
   var SprintData = {
     id: sprint.sprint.id,
     sprintName: sprint.sprint.name,
     storyPoints: {
-      promised: sprint.contents.allIssuesEstimateSum.text - pulledStoryPoint,
-      leftOvers: sprint.contents.incompletedIssuesEstimateSum.text,
-      pulled: pulledStoryPoint
+      promised: sprint.contents.allIssuesEstimateSum.text,
+      completed: sprint.contents.completedIssuesEstimateSum.text,
+      incompleted: sprint.contents.issuesNotCompletedEstimateSum.text!='null'?sprint.contents.issuesNotCompletedEstimateSum.text:'0',
+      pulled: pulledStoryPoint.toString()
     },
     typeDistribution: [
         {
@@ -50,7 +51,7 @@ SprintDataExtractor.prototype.extractData = function(sprint) {
 
 function extractPulledStoryPoints(sprint) {
   var addedDuringSprint = sprint.contents.issueKeysAddedDuringSprint;
-  var issues = sprint.contents.completedIssues.concat(sprint.contents.incompletedIssues);
+  var issues = getIssues(sprint);
   
   var pulledStorypoints = 0;
 
@@ -71,8 +72,8 @@ function extractPulledStoryPoints(sprint) {
 
 
 
-function extractTypeDistribution(sprint) {
-  
+function extractTypeDistribution(sprint) { 
+ 
   var typeSums = new Array();
   typeSums["bugs"] = 0;
   typeSums["tasks"] = 0;
@@ -80,7 +81,8 @@ function extractTypeDistribution(sprint) {
   typeSums["stories"] = 0;
   typeSums["research"] = 0;
   
-  var issues = sprint.contents.completedIssues.concat(sprint.contents.incompletedIssues);
+  var issues = getIssues(sprint);
+  
   for(var i=0; i<issues.length; i++) {
     
     var storyType = issues[i].typeName;
@@ -105,7 +107,6 @@ function extractTypeDistribution(sprint) {
         break;
     }
   }
-  
   return typeSums;
 }
 
@@ -113,7 +114,8 @@ function extractDistribution(sprint) {
   
   var topics = {};
   
-  var issues = sprint.contents.completedIssues.concat(sprint.contents.incompletedIssues);
+  var issues = getIssues(sprint);
+
   for(var i=0; i<issues.length; i++) {
     
     var epic = issues[i].epicField;
@@ -127,7 +129,6 @@ function extractDistribution(sprint) {
     addToTopicsHash(topics, name, storypoints);
 
   }
-  
   return topicsHashtoArray(topics);
 }
 
@@ -142,6 +143,7 @@ SprintDataExtractor.prototype.extractSprintGoals = function(rawSprintGoals) {
 
     sprintGoalList.push(issue);
   }
+
   return sprintGoalList
 }
 
@@ -163,6 +165,17 @@ function topicsHashtoArray(topics) {
 				});
   }
    return retval;
+}
+
+function getIssues(sprint) {
+  var issues = sprint.contents.completedIssues;
+  var incompletedIssues = sprint.contents.issuesNotCompletedInCurrentSprint;
+
+  if(incompletedIssues != undefined) {
+    issues.concat(incompletedIssues);
+  }
+
+  return issues;
 }
 
 module.exports = SprintDataExtractor

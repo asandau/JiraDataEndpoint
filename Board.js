@@ -1,11 +1,3 @@
-# On branch master
-# Changes to be committed:
-#   (use "git reset HEAD <file>..." to unstage)
-#
-#	modified:   Board.js
-#	modified:   SprintDataExtractor.js
-#
-[root@trident JiraDataEndpoint]# cat Board.js 
 var https = require('https')
 var auth = require('./auth.json')
 var rsvp = require('rsvp')

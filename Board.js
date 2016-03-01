@@ -2,7 +2,7 @@ var https = require('https')
 var auth = require('./auth.json')
 var rsvp = require('rsvp')
 
-var blacklist = [399,368,346,298,293,289,288];
+var blacklist = [399,368,346,298,293,289,288,398];
 
 
 
